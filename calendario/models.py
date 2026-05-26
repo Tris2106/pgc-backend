@@ -10,5 +10,7 @@ class Calendario(models.Model):
 
     usuario = models.ForeignKey(
         Usuario,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
