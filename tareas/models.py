@@ -28,14 +28,18 @@ class Tarea(models.Model):
 
     usuario = models.ForeignKey(
         Usuario,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
 
     categoria = models.ForeignKey(
         Categoria,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
-
+    
     def __str__(self):
         return self.titulo
 
