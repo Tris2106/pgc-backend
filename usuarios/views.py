@@ -1,34 +1,39 @@
-from rest_framework import viewsets
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
-
+from django.contrib.auth import authenticate
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 
-from .models import Usuario
 
-from .serializers import (
-    UsuarioSerializer,
-    RegisterSerializer
-)
+@api_view(['POST'])
+def login_view(request):
 
+    username = request.data.get('username')
+    password = request.data.get('password')
 
-class UsuarioViewSet(viewsets.ModelViewSet):
-    queryset = Usuario.objects.all()
-    serializer_class = UsuarioSerializer
+    try:
+        
+        user_obj = User.objects.filter(email=username).first()
 
+        if user_obj:
+            username = user_obj.username
 
-class RegisterView(generics.CreateAPIView):
+        user = authenticate(username=username, password=password)
 
-    queryset = User.objects.all()
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
 
-    serializer_class = RegisterSerializer
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email
+                }
+            })
 
+        return Response({"error": "Credenciales incorrectas"}, status=400)
 
-class ProfileView(generics.RetrieveUpdateAPIView):
-
-    serializer_class = RegisterSerializer
-
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
